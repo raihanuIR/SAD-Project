@@ -1,19 +1,33 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import Button from '../../components/Buttons';
+import { getUserOrders } from '../../services/api';
 
 export default function Profile() {
     const { user } = useAuth();
+    const [orders, setOrders] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // If someone tries to access this page directly without logging in, boot them to login
+    useEffect(() => {
+        if (user) {
+            const fetchOrders = async () => {
+                try {
+                    const data = await getUserOrders();
+                    setOrders(data);
+                } catch (error) {
+                    console.error('Failed to fetch orders:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchOrders();
+        }
+    }, [user]);
+
     if (!user) {
         return <Navigate to="/auth/login" />;
     }
-
-    // Dummy data representing their past orders
-    const myOrders = [
-        { id: 'ORD-20260415-A1B2C', date: 'April 15, 2026', items: 2, total: 125060, status: 'pending' }
-    ];
 
     return (
         <div className="bg-slate-50 dark:bg-gray-900 min-h-screen py-12 transition-colors duration-200">
@@ -21,8 +35,6 @@ export default function Profile() {
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-8">My Account</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-                    {/* Account Details */}
                     <div className="md:col-span-1">
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                             <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-2xl font-bold mb-4">
@@ -39,16 +51,17 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    {/* Order History */}
                     <div className="md:col-span-2">
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                             <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">Recent Orders</h2>
 
-                            {myOrders.length === 0 ? (
+                            {isLoading ? (
+                                <p className="text-slate-500">Loading orders...</p>
+                            ) : orders.length === 0 ? (
                                 <p className="text-slate-500">You haven't placed any orders yet.</p>
                             ) : (
                                 <div className="space-y-4">
-                                    {myOrders.map((order) => (
+                                    {orders.map((order) => (
                                         <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                             <div>
                                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Order ID</span>
@@ -73,9 +86,8 @@ export default function Profile() {
                             )}
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     );
-}
+}

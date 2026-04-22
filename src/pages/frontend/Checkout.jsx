@@ -2,12 +2,21 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Buttons';
 import { useCart } from '../../context/CartContext';
+import api, { validateCoupon } from '../../services/api';
 
 export default function Checkout() {
     const { cartItems, cartSubtotal, clearCart } = useCart();
     const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Coupon State
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponError, setCouponError] = useState('');
+
     const shippingCost = cartSubtotal > 500 ? 0 : 60;
-    const total = cartSubtotal + shippingCost;
+    const discount = appliedCoupon ? appliedCoupon.discount : 0;
+    const total = cartSubtotal + shippingCost - discount;
 
     const [formData, setFormData] = useState({
         name: '', mobile: '', address: '', city: '', state: '', zip_code: '', payment_method: 'cod'
@@ -17,13 +26,41 @@ export default function Checkout() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handlePlaceOrder = (e) => {
+    const handleApplyCoupon = async () => {
+        if (!couponCode) return;
+        setCouponError('');
+        try {
+            const data = await validateCoupon(couponCode, cartSubtotal);
+            setAppliedCoupon(data);
+            alert(`Coupon "${data.code}" applied! You saved ৳${data.discount}`);
+        } catch (error) {
+            setAppliedCoupon(null);
+            setCouponError(error.response?.data?.message || 'Invalid coupon');
+        }
+    };
+
+    const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        // In a real app, this sends the formData and cartItems to /api/checkout/process
-        console.log('Order Placed!', { formData, items: cartItems, total });
-        clearCart();
-        alert('Order placed successfully!');
-        navigate('/');
+        setIsSubmitting(true);
+        try {
+            await api.post('/orders', {
+                ...formData,
+                items: cartItems,
+                subtotal: cartSubtotal,
+                shippingCost,
+                discount,
+                couponCode: appliedCoupon?.code,
+                total
+            });
+            clearCart();
+            alert('Order placed successfully!');
+            navigate('/profile');
+        } catch (error) {
+            console.error('Order failed:', error);
+            alert('Failed to place order. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (cartItems.length === 0) {
@@ -99,6 +136,29 @@ export default function Checkout() {
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Coupon Input */}
+                            <div className="mb-6">
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Enter Coupon Code" 
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                        className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md px-3 py-2 text-sm focus:ring-rose-500 outline-none uppercase"
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={handleApplyCoupon}
+                                        className="bg-zinc-900 text-white px-4 py-2 rounded-md text-sm font-bold hover:bg-black transition-colors"
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                                {couponError && <p className="text-red-500 text-xs mt-1 font-medium">{couponError}</p>}
+                                {appliedCoupon && <p className="text-green-500 text-xs mt-1 font-bold">Coupon "{appliedCoupon.code}" applied successfully!</p>}
+                            </div>
+
                             <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3 text-sm">
                                 <div className="flex justify-between text-slate-600">
                                     <span>Subtotal</span>
@@ -108,13 +168,19 @@ export default function Checkout() {
                                     <span>Shipping</span>
                                     <span>{shippingCost === 0 ? 'Free' : `৳${shippingCost}`}</span>
                                 </div>
+                                {discount > 0 && (
+                                    <div className="flex justify-between text-green-600 font-bold">
+                                        <span>Discount</span>
+                                        <span>- ৳{discount.toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
                                     <span className="text-lg font-bold text-slate-900 dark:text-white">Total</span>
                                     <span className="text-2xl font-bold text-rose-600">৳{total.toLocaleString()}</span>
                                 </div>
                             </div>
-                            <Button type="submit" variant="secondary" className="w-full mt-6 py-3">
-                                Place Order
+                            <Button type="submit" variant="secondary" disabled={isSubmitting} className="w-full mt-6 py-3 disabled:opacity-50">
+                                {isSubmitting ? 'Processing...' : 'Place Order'}
                             </Button>
                         </div>
                     </div>
@@ -124,3 +190,4 @@ export default function Checkout() {
         </div>
     );
 }
+

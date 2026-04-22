@@ -36,6 +36,11 @@ const ProtectedRoute = ({ children, requireRole }) => {
 
 import ScrollToTop from './components/ScrollToTop';
 
+import ProductManager from './pages/admin/ProductManager';
+import BrandManager from './pages/admin/BrandManager';
+import OfferManager from './pages/admin/OfferManager';
+import ReportManager from './pages/admin/ReportManager';
+
 export default function App() {
   return (
     <ThemeProvider>
@@ -67,14 +72,17 @@ export default function App() {
           <Route path="/admin" element={
             <ProtectedRoute requireRole="admin">
               <AdminLayout />
-              <Placeholder title="Admin Layout Loaded" />
             </ProtectedRoute>
           }>
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="products" element={<ProductForm />} />
-            <Route path="orders" element={<OrderManager />} />
+            <Route path="products" element={<ProductManager />} />
+            <Route path="products/create" element={<ProductForm />} />
             <Route path="categories" element={<CategoryManager />} />
+            <Route path="brands" element={<BrandManager />} />
+            <Route path="offers" element={<OfferManager />} />
             <Route path="coupons" element={<CouponManager />} />
+            <Route path="orders" element={<OrderManager />} />
+            <Route path="reports" element={<ReportManager />} />
           </Route>
 
         </Routes>

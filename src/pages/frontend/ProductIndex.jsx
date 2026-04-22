@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/ProductCards';
 import Button from '../../components/Buttons';
-import { getProducts } from '../../services/api';
+import { getProducts, getCategories } from '../../services/api';
 
 export default function ProductIndex() {
     const { addToCart } = useCart();
@@ -14,10 +14,21 @@ export default function ProductIndex() {
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState(['All']);
     const [loading, setLoading] = useState(true);
 
-    // Categories exactly as requested
-    const categories = ['All', 'Electronics', 'Fashion', 'Home and Living', 'Beauty', 'Sneakers'];
+    // Fetch Categories and Products
+    useEffect(() => {
+        const initData = async () => {
+            try {
+                const catsData = await getCategories();
+                setCategories(['All', ...catsData.map(c => c.name)]);
+            } catch (error) {
+                console.error("Failed to fetch categories", error);
+            }
+        };
+        initData();
+    }, []);
 
     // Update active category from URL
     useEffect(() => {
@@ -111,4 +122,4 @@ export default function ProductIndex() {
             </div>
         </div>
     );
-}
+}

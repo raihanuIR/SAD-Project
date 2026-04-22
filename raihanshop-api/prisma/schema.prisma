@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("customer")
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  slug     String    @unique
+  products Product[]
+}
+
+model Brand {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id               Int         @id @default(autoincrement())
+  name             String
+  slug             String      @unique
+  price            Float
+  salePrice        Float?
+  image            String
+  images           String      @default("[]")
+  brandId          Int?
+  brand            Brand?      @relation(fields: [brandId], references: [id])
+  productCode      String      @unique
+  status           String      @default("In Stock")
+  stockQuantity    Int         @default(0)
+  shortDescription String?
+  features         String      @default("[]")
+  categoryId       Int
+  category         Category    @relation(fields: [categoryId], references: [id])
+  createdAt        DateTime    @default(now())
+  orderItems       OrderItem[]
+}
+
+model Offer {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  image       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  userId        Int?
+  user          User?       @relation(fields: [userId], references: [id])
+  name          String
+  mobile        String
+  address       String
+  city          String
+  state         String
+  zipCode       String
+  paymentMethod String      @default("cod")
+  subtotal      Float
+  shippingCost  Float       @default(0)
+  discount      Float       @default(0)
+  couponCode    String?
+  total         Float
+  status        String      @default("Pending")
+
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+}
+
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Float
+  quantity  Int
+}
+
+model Coupon {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  type        String   @default("percentage")
+  value       Float
+  minOrder    Float    @default(0)
+  maxUses     Int?
+  usedCount   Int      @default(0)
+  expiresAt   DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}

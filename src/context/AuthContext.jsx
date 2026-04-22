@@ -7,13 +7,14 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Check if the user is already logged in when the app loads
+    // Restore session from cookies via API on app load
     useEffect(() => {
         const checkAuth = async () => {
             try {
                 const response = await api.get('/user');
                 setUser(response.data);
-            } catch (error) {
+            } catch (err) {
+                // User is not logged in or backend is down
                 setUser(null);
             } finally {
                 setLoading(false);
@@ -23,22 +24,32 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (credentials, isAdminRoute = false) => {
-        const endpoint = isAdminRoute ? '/admin/login' : '/auth/login';
-        // Laravel requires a CSRF token before login
-        await api.get('/sanctum/csrf-cookie');
-        const response = await api.post(endpoint, credentials);
-        setUser(response.data.user);
-        return response.data;
+        try {
+            const endpoint = isAdminRoute ? '/admin/login' : '/auth/login';
+            const response = await api.post(endpoint, credentials);
+            setUser(response.data.user);
+            return response.data;
+        } catch (error) {
+            const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
+            throw new Error(message);
+        }
     };
 
-    const logout = async (isAdminRoute = false) => {
-        const endpoint = isAdminRoute ? '/admin/logout' : '/auth/logout';
-        await api.post(endpoint);
-        setUser(null);
+    const logout = async () => {
+        try {
+            // Depending on which route they are on, but we can just call /admin/logout or similar
+            // Our backend logout route is at /api/admin/logout or we can make a general /api/auth/logout
+            await api.post('/admin/logout');
+        } catch (err) {
+            console.error('Logout error:', err);
+        } finally {
+            setUser(null);
+            // Redirect to home or login after logout
+            window.location.href = '/';
+        }
     };
 
     const hasRole = (roleName) => {
-        // Check if the user has the required Spatie role
         return user?.roles?.includes(roleName);
     };
 
@@ -49,4 +60,4 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext);

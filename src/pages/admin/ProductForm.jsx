@@ -1,155 +1,188 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../../components/Buttons';
+import { getCategories, getBrands, createProduct } from '../../services/api';
 
 export default function ProductForm() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [brands, setBrands] = useState([]);
 
-    // Mapped exactly to your Laravel Product model fillables
     const [formData, setFormData] = useState({
         name: '',
-        slug: '',
-        description: '',
         short_description: '',
         price: '',
         sale_price: '',
-        sku: '',
         stock_quantity: '',
         category_id: '',
-        brand_id: '',
-        is_active: true,
-        is_featured: false,
+        brandId: '',
+        status: 'In Stock',
+        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop',
     });
 
-    // Dummy categories based on your seeder
-    const categories = [
-        { id: 1, name: 'Electronics' },
-        { id: 2, name: 'Fashion' },
-        { id: 3, name: 'Home & Living' },
-    ];
+    useEffect(() => {
+        const initData = async () => {
+            try {
+                const [cats, brandsData] = await Promise.all([getCategories(), getBrands()]);
+                setCategories(cats);
+                setBrands(brandsData);
+            } catch (error) {
+                console.error('Failed to fetch initialization data:', error);
+            }
+        };
+        initData();
+    }, []);
 
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // In reality: await api.post('/admin/products', formData);
-        console.log('Submitting Product Data:', formData);
-
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            // Mapping frontend snake_case to backend camelCase if necessary, 
+            // but the API specifically uses these field names in the POST route
+            await createProduct({
+                ...formData,
+                categoryId: parseInt(formData.category_id),
+                brandId: formData.brandId ? parseInt(formData.brandId) : null,
+                price: parseFloat(formData.price),
+                salePrice: formData.sale_price ? parseFloat(formData.sale_price) : null,
+                stockQuantity: parseInt(formData.stock_quantity) // Consistent with API expectation
+            });
             navigate('/admin/products');
-        }, 1000);
+        } catch (error) {
+            alert('Failed to save product specification');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
+    const inputClasses = "w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-300 focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 outline-none transition-all shadow-sm";
+    const labelClasses = "block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2";
+
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Create New Product</h1>
-                <Button variant="ghost" onClick={() => navigate('/admin/products')} className="text-gray-500 hover:text-gray-800">
-                    Cancel &larr;
-                </Button>
+        <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic mb-2">Node Configuration</h1>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Initialize new inventory node parameters</p>
+                </div>
+                <button 
+                    onClick={() => navigate('/admin/products')}
+                    className="text-slate-400 hover:text-slate-900 text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Abort Protocol
+                </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
+                            <h2 className="text-xl font-black text-slate-900 mb-8 uppercase tracking-tight italic flex items-center gap-3">
+                                <span className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 text-xs not-italic shadow-inner">01</span>
+                                General Specification
+                            </h2>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Main Info - Left Column */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4">General Information</h2>
+                            <div className="space-y-6 relative z-10">
+                                <div>
+                                    <label className={labelClasses}>Entity Identity *</label>
+                                    <input required type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Enter model designation..." className={inputClasses} />
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                                <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Slug (URL snippet)</label>
-                                <input type="text" name="slug" value={formData.slug} onChange={handleChange} placeholder="Leave blank to auto-generate" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
-                                <textarea name="short_description" rows="2" value={formData.short_description} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none"></textarea>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Description</label>
-                                <textarea name="description" rows="5" value={formData.description} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none"></textarea>
+                                <div>
+                                    <label className={labelClasses}>Technical Abstract</label>
+                                    <textarea name="short_description" rows="4" value={formData.short_description} onChange={handleChange} placeholder="Brief functional overview..." className={inputClasses}></textarea>
+                                </div>
+                                
+                                <div>
+                                    <label className={labelClasses}>Visual Uplink (Image URL)</label>
+                                    <input type="text" name="image" value={formData.image} onChange={handleChange} placeholder="https://..." className={inputClasses} />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Pricing & Inventory - Right Column */}
-                    <div className="space-y-6">
+                    <div className="space-y-8">
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                            <h2 className="text-xl font-black text-slate-900 mb-8 uppercase tracking-tight italic flex items-center gap-3">
+                                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs not-italic shadow-inner">02</span>
+                                Financials
+                            </h2>
 
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4">Pricing & Inventory</h2>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className={labelClasses}>Standard Value (৳) *</label>
+                                    <input required type="number" min="0" step="0.01" name="price" value={formData.price} onChange={handleChange} placeholder="0.00" className={inputClasses} />
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Regular Price (৳) *</label>
-                                <input required type="number" min="0" step="0.01" name="price" value={formData.price} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
-                            </div>
+                                <div>
+                                    <label className={labelClasses}>Promotional Value (৳)</label>
+                                    <input type="number" min="0" step="0.01" name="sale_price" value={formData.sale_price} onChange={handleChange} placeholder="0.00" className={inputClasses} />
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Sale Price (৳)</label>
-                                <input type="number" min="0" step="0.01" name="sale_price" value={formData.sale_price} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                                <input type="text" name="sku" value={formData.sku} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity *</label>
-                                <input required type="number" min="0" name="stock_quantity" value={formData.stock_quantity} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                                <div>
+                                    <label className={labelClasses}>Inventory Load (Stock) *</label>
+                                    <input required type="number" min="0" name="stock_quantity" value={formData.stock_quantity} onChange={handleChange} placeholder="Units in stock" className={inputClasses} />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4">Organization</h2>
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                            <h2 className="text-xl font-black text-slate-900 mb-8 uppercase tracking-tight italic flex items-center gap-3">
+                                <span className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 text-xs not-italic shadow-inner">03</span>
+                                Classification
+                            </h2>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                                <select required name="category_id" value={formData.category_id} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                                    <option value="">Select Category</option>
-                                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
-                            </div>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className={labelClasses}>Primary Sector *</label>
+                                    <select required name="category_id" value={formData.category_id} onChange={handleChange} className={inputClasses}>
+                                        <option value="">Select Sector</option>
+                                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                </div>
 
-                            <div className="pt-4 border-t border-gray-100 space-y-3">
-                                <label className="flex items-center">
-                                    <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4" />
-                                    <span className="ml-2 text-sm text-gray-700">Active (Visible to customers)</span>
-                                </label>
-                                <label className="flex items-center">
-                                    <input type="checkbox" name="is_featured" checked={formData.is_featured} onChange={handleChange} className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4" />
-                                    <span className="ml-2 text-sm text-gray-700">Featured Product</span>
-                                </label>
+                                <div>
+                                    <label className={labelClasses}>Corporate Parent</label>
+                                    <select name="brandId" value={formData.brandId} onChange={handleChange} className={inputClasses}>
+                                        <option value="">Select Entity</option>
+                                        {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                                    </select>
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-4 border-t border-gray-200 pt-6">
-                    <Button type="button" variant="outline" onClick={() => navigate('/admin/products')} className="px-6 py-2">
+                <div className="flex flex-col md:flex-row justify-end gap-4 pt-10 border-t border-slate-200">
+                    <button 
+                        type="button" 
+                        onClick={() => navigate('/admin/products')} 
+                        className="px-10 py-4 rounded-2xl border border-slate-200 text-slate-400 font-black uppercase text-xs tracking-widest hover:bg-slate-50 transition-all"
+                    >
                         Cancel
-                    </Button>
-                    <Button type="submit" variant="primary" disabled={isLoading} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white font-bold rounded-md">
-                        {isLoading ? 'Saving...' : 'Save Product'}
-                    </Button>
+                    </button>
+                    <button 
+                        type="submit" 
+                        disabled={isLoading} 
+                        className="px-12 py-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-black uppercase text-xs tracking-widest rounded-2xl shadow-lg shadow-indigo-100 transition-all active:scale-95"
+                    >
+                        {isLoading ? 'Processing...' : 'Confirm Initialization'}
+                    </button>
                 </div>
             </form>
         </div>
     );
 }
+
