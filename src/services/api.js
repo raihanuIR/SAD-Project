@@ -9,7 +9,23 @@ const api = axios.create({
     }
 });
 
-// Brands
+// ─── Auth ───
+export const login = async (credentials) => {
+    const response = await api.post('/auth/login', credentials);
+    return response.data;
+};
+
+export const registerUser = async (userData) => {
+    const response = await api.post('/auth/register', userData);
+    return response.data;
+};
+
+export const logout = async () => {
+    const response = await api.post('/auth/logout');
+    return response.data;
+};
+
+// ─── Brands ───
 export const getBrands = async () => {
     const response = await api.get('/brands');
     return response.data;
@@ -25,7 +41,7 @@ export const deleteBrand = async (id) => {
     return response.data;
 };
 
-// Offers
+// ─── Offers ───
 export const getOffers = async () => {
     const response = await api.get('/offers');
     return response.data;
@@ -40,19 +56,6 @@ export const deleteOffer = async (id) => {
     const response = await api.delete(`/offers/${id}`);
     return response.data;
 };
-
-// Reports
-export const getReports = async () => {
-    const response = await api.get('/admin/reports');
-    return response.data;
-};
-
-export const validateCoupon = async (code, amount) => {
-    const response = await api.post('/coupons/validate', { code, amount });
-    return response.data;
-};
-
-export default api;
 
 // ─── Products ───
 export const getProducts = async (category = 'All', searchQuery = '') => {
@@ -73,9 +76,50 @@ export const getCategories = async () => {
     return response.data;
 };
 
-// ─── Admin Stats ───
+export const createCategory = async (name) => {
+    const response = await api.post('/categories', { name });
+    return response.data;
+};
+
+export const updateCategory = async (id, name) => {
+    const response = await api.patch(`/categories/${id}`, { name });
+    return response.data;
+};
+
+export const deleteCategory = async (id) => {
+    const response = await api.delete(`/categories/${id}`);
+    return response.data;
+};
+
+// ─── Coupons ───
+export const getCoupons = async () => {
+    const response = await api.get('/coupons');
+    return response.data;
+};
+
+export const createCoupon = async (couponData) => {
+    const response = await api.post('/coupons', couponData);
+    return response.data;
+};
+
+export const deleteCoupon = async (id) => {
+    const response = await api.delete(`/coupons/${id}`);
+    return response.data;
+};
+
+export const validateCoupon = async (code, amount) => {
+    const response = await api.post('/coupons/validate', { code, amount });
+    return response.data;
+};
+
+// ─── Admin Dashboard ───
 export const getAdminStats = async () => {
     const response = await api.get('/admin/stats');
+    return response.data;
+};
+
+export const getReports = async () => {
+    const response = await api.get('/admin/reports');
     return response.data;
 };
 
@@ -111,41 +155,10 @@ export const deleteProduct = async (productId) => {
     return response.data;
 };
 
-// ─── Admin Categories ───
-export const createCategory = async (name) => {
-    const response = await api.post('/categories', { name });
-    return response.data;
-};
-
-export const updateCategory = async (id, name) => {
-    const response = await api.patch(`/categories/${id}`, { name });
-    return response.data;
-};
-
-export const deleteCategory = async (id) => {
-    const response = await api.delete(`/categories/${id}`);
-    return response.data;
-};
-
-// ─── Admin Coupons ───
-export const getCoupons = async () => {
-    const response = await api.get('/coupons');
-    return response.data;
-};
-
-export const createCoupon = async (couponData) => {
-    const response = await api.post('/coupons', couponData);
-    return response.data;
-};
-
-export const deleteCoupon = async (id) => {
-    const response = await api.delete(`/coupons/${id}`);
-    return response.data;
-};
-
-
-// ─── User ───
+// ─── User Profile ───
 export const getUserOrders = async () => {
     const response = await api.get('/user/orders');
     return response.data;
 };
+
+export default api;

@@ -12,6 +12,7 @@ import ProductForm from './pages/admin/ProductForm';
 import OrderManager from './pages/admin/OrderManager';
 import Profile from './pages/frontend/Profile';
 import ProductShow from './pages/frontend/ProductShow';
+import Register from './pages/auth/Register';
 import CategoryManager from './pages/admin/CategoryManager';
 import CouponManager from './pages/admin/CouponManager';
 import Contact from './pages/frontend/Contact';
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="/products/:slug" element={<ProductShow />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/auth/login" element={<Login />} />
+            <Route path="/auth/register" element={<Register />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/contact" element={<Contact />} />
