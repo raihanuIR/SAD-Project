@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../../../../lib/prisma';
 import { signToken, setAuthCookie } from '../../../../lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
     const { email, password } = await request.json();
 
