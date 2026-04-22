@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import Button from '../components/Buttons';
 
 export default function MainLayout() {
-    const { user, logout } = useAuth();
+    const { user, logout, hasRole } = useAuth();
     const { cartCount: cartItemCount } = useCart();
     const { theme } = useTheme();
     const navigate = useNavigate();
@@ -75,6 +75,12 @@ export default function MainLayout() {
                         </form>
 
                         <div className="flex items-center gap-6">
+                            {hasRole('admin') && (
+                                <Link to="/admin/dashboard" className="text-indigo-600 dark:text-indigo-400 hover:text-amber-500 transition-all hover:scale-110 flex items-center gap-1">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block">Dashboard</span>
+                                </Link>
+                            )}
                             <Link to={user ? "/profile" : "/auth/login"} className="text-zinc-700 dark:text-zinc-300 hover:text-amber-500 transition-all hover:scale-110">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             </Link>
@@ -126,7 +132,8 @@ export default function MainLayout() {
                             <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
                                 <li><Link to="/products" className="hover:text-amber-500 transition-colors">Catalog</Link></li>
                                 <li><Link to="/about" className="hover:text-amber-500 transition-colors">Legacy</Link></li>
-                                <li><a href="#" className="hover:text-amber-500 transition-colors">Editorial</a></li>
+                                <li><Link to="/auth/register" className="hover:text-amber-500 transition-colors">Registration</Link></li>
+                                <li><Link to="/admin/login" className="text-indigo-600 dark:text-indigo-400 hover:text-amber-500 transition-colors">Admin Terminal</Link></li>
                                 <li><Link to="/contact" className="hover:text-amber-500 transition-colors">Concierge</Link></li>
                             </ul>
                         </div>
