@@ -13,7 +13,7 @@
     "seed": "node prisma/seed.cjs"
   },
   "dependencies": {
-    "@libsql/client": "^0.14.0",
+    "@libsql/client": "0.8.1",
     "@prisma/adapter-libsql": "6.4.1",
     "@prisma/client": "6.4.1",
     "@tailwindcss/postcss": "^4.0.0",
