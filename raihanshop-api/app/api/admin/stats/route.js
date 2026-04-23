@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { getAuthUser } from '../../../../lib/auth';
 import { prisma } from '../../../../lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     const payload = await getAuthUser();
     if (!payload || payload.role !== 'admin') {
