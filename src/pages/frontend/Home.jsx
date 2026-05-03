@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../../components/ProductCards';
 import { getProducts, getOffers } from '../../services/api';
+import { useCart } from '../../context/CartContext';
 
 export default function Home() {
+    const { addToCart } = useCart();
     const [featuredProducts, setFeaturedProducts] = useState([]);
     const [offers, setOffers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -150,7 +152,7 @@ export default function Home() {
                         [...Array(4)].map((_, i) => <div key={i} className="animate-pulse bg-zinc-200 dark:bg-zinc-800 rounded-xl h-96"></div>)
                     ) : (
                         featuredProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                            <ProductCard key={product.id} product={product} onAdd={addToCart} />
                         ))
                     )}
                 </div>

@@ -75,12 +75,7 @@ export default function MainLayout() {
                         </form>
 
                         <div className="flex items-center gap-6">
-                            {hasRole('admin') && (
-                                <Link to="/admin/dashboard" className="text-indigo-600 dark:text-indigo-400 hover:text-amber-500 transition-all hover:scale-110 flex items-center gap-1">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                    <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block">Dashboard</span>
-                                </Link>
-                            )}
+
                             <Link to={user ? "/profile" : "/auth/login"} className="text-zinc-700 dark:text-zinc-300 hover:text-amber-500 transition-all hover:scale-110">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             </Link>

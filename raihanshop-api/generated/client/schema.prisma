@@ -63,27 +63,26 @@ model Offer {
 }
 
 model Order {
-  id            Int         @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   userId        Int?
-  user          User?       @relation(fields: [userId], references: [id])
+  user          User?   @relation(fields: [userId], references: [id])
   name          String
   mobile        String
   address       String
   city          String
   state         String
   zipCode       String
-  paymentMethod String      @default("cod")
+  paymentMethod String  @default("cod")
   subtotal      Float
-  shippingCost  Float       @default(0)
-  discount      Float       @default(0)
+  shippingCost  Float   @default(0)
+  discount      Float   @default(0)
   couponCode    String?
   total         Float
-  status        String      @default("Pending")
+  status        String  @default("Pending")
 
-  items         OrderItem[]
-  createdAt     DateTime    @default(now())
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
 }
-
 
 model OrderItem {
   id        Int     @id @default(autoincrement())
@@ -97,14 +96,14 @@ model OrderItem {
 }
 
 model Coupon {
-  id          Int      @id @default(autoincrement())
-  code        String   @unique
-  type        String   @default("percentage")
-  value       Float
-  minOrder    Float    @default(0)
-  maxUses     Int?
-  usedCount   Int      @default(0)
-  expiresAt   DateTime?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id        Int       @id @default(autoincrement())
+  code      String    @unique
+  type      String    @default("percentage")
+  value     Float
+  minOrder  Float     @default(0)
+  maxUses   Int?
+  usedCount Int       @default(0)
+  expiresAt DateTime?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
 }
