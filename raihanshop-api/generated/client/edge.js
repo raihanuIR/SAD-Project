@@ -207,7 +207,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Admin\\Downloads\\New folder (2)\\SAD-Project\\raihanshop-api\\generated\\client",
+      "value": "C:\\Users\\Admin\\Downloads\\SAD-Project\\raihanshop-api\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -221,12 +221,11 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\Admin\\Downloads\\New folder (2)\\SAD-Project\\raihanshop-api\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Admin\\Downloads\\SAD-Project\\raihanshop-api\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../prisma",
   "clientVersion": "6.4.1",
@@ -235,7 +234,7 @@ const config = {
     "db"
   ],
   "activeProvider": "sqlite",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
