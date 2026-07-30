@@ -47,7 +47,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <CartProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <ScrollToTop />
           <Routes>
 
